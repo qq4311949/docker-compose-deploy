@@ -2,11 +2,12 @@ version: "3"
 services:
   nginx:
     image: nginx:1.15.1-alpine
+    container_name: nginx
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ../www:/usr/share/nginx/html:rw
+      - ../www/public:/var/www/html/public:rw
       - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./conf/nginx/conf.d:/etc/nginx/conf.d:ro
       - ../logs/nginx:/var/log/nginx:rw
@@ -16,13 +17,13 @@ services:
     command: nginx -g 'daemon off;'
 
   php:
-    image: registry.cn-beijing.aliyuncs.com/maybe/php:v1
+    image: registry.cn-qingdao.aliyuncs.com/php_fpm/5.6.37:v1
+    container_name: php
     ports:
       - "9000:9000"
     volumes:
       - ../www:/var/www/html:rw
       - ./conf/php/php.ini:/usr/local/etc/php/php.ini:ro
-      - ./conf/php/php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf:rw
       - ../logs/php:/usr/local/var/log:rw
     networks:
       - net-php
@@ -33,6 +34,7 @@ services:
 
   mysql:
     image: mysql:5.6.40
+    container_name: mysql
     ports:
       - "3306:3306"
     volumes:
@@ -42,14 +44,15 @@ services:
       - net-mysql
     environment:
       MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: mydb
-      MYSQL_USER: me
+      MYSQL_DATABASE: eshop
+      MYSQL_USER: djs
       MYSQL_PASSWORD: 111111
     restart: always
     command: "--character-set-server=utf8"
 
   redis:
     image: redis:3.2.11-alpine
+    container_name: redis
     ports:
       - "6379:6379"
     volumes:
@@ -60,6 +63,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
     ports:
       - "8080:80"
     networks:
@@ -67,16 +71,6 @@ services:
     environment:
       - PMA_HOST=mysql
       - PMA_PORT=3306
-
-  phpredisadmin:
-    image: erikdubbelboer/phpredisadmin:latest
-    ports:
-      - "8081:80"
-    networks:
-      - net-redis
-    environment:
-      - REDIS_1_HOST=redis
-      - REDIS_1_PORT=6379
 
 networks:
   net-php:
